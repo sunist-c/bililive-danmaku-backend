@@ -37,7 +37,7 @@ If you want to run this program from source, please confirm your go version is a
 Run the following scripts:
 
 ```shell
-git clone https://github.com/sunist-c/bililive-danmaku.git danmaku
+git clone https://github.com/sunist-c/bililive-danmaku-backend.git danmaku
 cd danmaku
 
 # if you are a Mainland Chinese user, please use proxy
@@ -52,7 +52,7 @@ go run main.go -b=false
 Run the following scripts:
 
 ```shell
-git clone https://github.com/sunist-c/bililive-danmaku.git danmaku
+git clone https://github.com/sunist-c/bililive-danmaku-backend.git danmaku
 cd danmaku
 
 docker build -t bililive-danmaku:latest .
@@ -87,7 +87,7 @@ If the project helps you, please give me a star, thanks :)
 
 **From Plugin Store**
 
-<iframe width="245px" height="48px" src="https://plugins.jetbrains.com/embeddable/install/19967"/>
+[Bililive-Danmaku](https://plugins.jetbrains.com/plugin/19967-bililive-danmaku)
 
 **From Source**
 
