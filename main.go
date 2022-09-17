@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/sunist-c/bililive-danmaku/model"
-	"github.com/sunist-c/bililive-danmaku/model/pool"
-	"github.com/sunist-c/bililive-danmaku/service/api"
-	"github.com/sunist-c/bililive-danmaku/websocket"
 	"log"
+
+	"github.com/sunist-c/bililive-danmaku-backend/model"
+	"github.com/sunist-c/bililive-danmaku-backend/model/pool"
+	"github.com/sunist-c/bililive-danmaku-backend/service/api"
+	"github.com/sunist-c/bililive-danmaku-backend/websocket"
 )
 
 func main() {

@@ -4,8 +4,8 @@ import (
 	"log"
 	"strings"
 
-	"github.com/sunist-c/bililive-danmaku/model"
-	"github.com/sunist-c/bililive-danmaku/model/message"
+	"github.com/sunist-c/bililive-danmaku-backend/model"
+	"github.com/sunist-c/bililive-danmaku-backend/model/message"
 )
 
 func EmptyHandler() func(pool *Pool) {

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 
-	"github.com/sunist-c/bililive-danmaku/model"
-	"github.com/sunist-c/bililive-danmaku/service/backend"
+	"github.com/sunist-c/bililive-danmaku-backend/model"
+	"github.com/sunist-c/bililive-danmaku-backend/service/backend"
 )
 
 var (

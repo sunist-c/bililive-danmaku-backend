@@ -11,8 +11,8 @@ import (
 	"math"
 	"net/http"
 
-	"github.com/sunist-c/bililive-danmaku/model"
-	"github.com/sunist-c/bililive-danmaku/model/info"
+	"github.com/sunist-c/bililive-danmaku-backend/model"
+	"github.com/sunist-c/bililive-danmaku-backend/model/info"
 )
 
 func ByteArrToDecimal(src []byte) (sum int) {

@@ -2,7 +2,7 @@ package backend
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/sunist-c/bililive-danmaku/model"
+	"github.com/sunist-c/bililive-danmaku-backend/model"
 	"time"
 )
 

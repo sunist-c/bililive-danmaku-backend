@@ -10,10 +10,10 @@ import (
 
 	"github.com/gorilla/websocket"
 
-	"github.com/sunist-c/bililive-danmaku/model"
-	"github.com/sunist-c/bililive-danmaku/model/info"
-	"github.com/sunist-c/bililive-danmaku/model/message"
-	"github.com/sunist-c/bililive-danmaku/model/pool"
+	"github.com/sunist-c/bililive-danmaku-backend/model"
+	"github.com/sunist-c/bililive-danmaku-backend/model/info"
+	"github.com/sunist-c/bililive-danmaku-backend/model/message"
+	"github.com/sunist-c/bililive-danmaku-backend/model/pool"
 )
 
 type Client struct {

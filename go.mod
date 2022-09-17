@@ -1,4 +1,4 @@
-module github.com/sunist-c/bililive-danmaku
+module github.com/sunist-c/bililive-danmaku-backend
 
 go 1.19
 

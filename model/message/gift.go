@@ -1,6 +1,6 @@
 package message
 
-import "github.com/sunist-c/bililive-danmaku/model"
+import "github.com/sunist-c/bililive-danmaku-backend/model"
 
 type Gift struct {
 	UserName string `json:"u_uname"`

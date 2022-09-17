@@ -1,6 +1,6 @@
 package message
 
-import "github.com/sunist-c/bililive-danmaku/model"
+import "github.com/sunist-c/bililive-danmaku-backend/model"
 
 type Danmaku struct {
 	UID        uint32 `json:"uid"`

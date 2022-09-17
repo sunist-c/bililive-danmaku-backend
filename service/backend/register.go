@@ -7,12 +7,12 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/sunist-c/bililive-danmaku/callback"
-	"github.com/sunist-c/bililive-danmaku/model"
-	"github.com/sunist-c/bililive-danmaku/model/info"
-	"github.com/sunist-c/bililive-danmaku/model/message"
-	"github.com/sunist-c/bililive-danmaku/model/pool"
-	"github.com/sunist-c/bililive-danmaku/websocket"
+	"github.com/sunist-c/bililive-danmaku-backend/callback"
+	"github.com/sunist-c/bililive-danmaku-backend/model"
+	"github.com/sunist-c/bililive-danmaku-backend/model/info"
+	"github.com/sunist-c/bililive-danmaku-backend/model/message"
+	"github.com/sunist-c/bililive-danmaku-backend/model/pool"
+	"github.com/sunist-c/bililive-danmaku-backend/websocket"
 )
 
 type RegisterRequest struct {
