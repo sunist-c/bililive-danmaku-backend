@@ -27,6 +27,13 @@ func NewClient(baseRouter, danmakuRouter, giftRouter, guardRouter, masterRouter,
 	}
 }
 
+func NewClientWithOption(option *ClientOptions) *Client {
+	return &Client{
+		client:  &http.Client{},
+		Options: option,
+	}
+}
+
 func (c *Client) SendMessage(ctx *Context) {
 	if ctx == nil {
 		return

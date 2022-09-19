@@ -2,29 +2,29 @@ package backend
 
 import (
 	"fmt"
+	"github.com/gin-gonic/gin"
+	"github.com/sunist-c/bililive-danmaku-backend/websocket"
 	"log"
 	"strings"
 
-	"github.com/gin-gonic/gin"
-
 	"github.com/sunist-c/bililive-danmaku-backend/callback"
 	"github.com/sunist-c/bililive-danmaku-backend/model"
-	"github.com/sunist-c/bililive-danmaku-backend/model/info"
 	"github.com/sunist-c/bililive-danmaku-backend/model/message"
 	"github.com/sunist-c/bililive-danmaku-backend/model/pool"
-	"github.com/sunist-c/bililive-danmaku-backend/websocket"
 )
 
 type RegisterRequest struct {
-	RoomID         uint32 `json:"room_id,omitempty"`
-	BaseRouter     string `json:"baseRouter,omitempty"`
-	DanmakuRouter  string `json:"danmakuRouter,omitempty"`
-	GiftRouter     string `json:"giftRouter,omitempty"`
-	GuardRouter    string `json:"guardRouter,omitempty"`
-	MasterRouter   string `json:"masterRouter,omitempty"`
-	AudienceRouter string `json:"audienceRouter,omitempty"`
-	FansRouter     string `json:"fansRouter,omitempty"`
-	CustomMessage  string `json:"customMessage,omitempty"`
+	RoomID           uint32 `json:"room_id"`
+	BaseRouter       string `json:"baseRouter"`
+	DanmakuRouter    string `json:"danmakuRouter"`
+	GiftRouter       string `json:"giftRouter"`
+	GuardRouter      string `json:"guardRouter"`
+	MasterRouter     string `json:"masterRouter"`
+	AudienceRouter   string `json:"audienceRouter"`
+	FansRouter       string `json:"fansRouter"`
+	CustomMessage    string `json:"customMessage"`
+	ExitRouter       string `json:"exitRouter"`
+	UpdateRoomRouter string `json:"updateRoomRouter"`
 }
 
 type RoomInfo struct {
@@ -54,11 +54,11 @@ func WebsocketHandler(callbackClient *callback.Client) func(pool *pool.Pool) {
 				}
 			case src := <-pool.Danmaku:
 				m := message.NewDanmakuWithData(src)
-				log.Printf("%d-%s | %d-%s: %s\n", m.MedalLevel, m.MedalName, m.UserLevel, m.UserName, m.Message)
+				log.Printf("Lv%d%s - Lv%d%s: %s\n", m.MedalLevel, m.MedalName, m.UserLevel, m.UserName, m.Message)
 				callbackClient.SendMessage(callback.NewContext(m, callbackClient.Options.DanmakuRouter))
 			case src := <-pool.Gift:
 				g := message.NewGiftWithData(src)
-				log.Printf("%s %s valued %d gift %s * %v\n", g.UserName, g.Action, g.Price, g.GiftName, g.Number)
+				log.Printf("%s %s %s*%v, total valued %v\n", g.UserName, g.Action, g.GiftName, g.Number, g.Price)
 				callbackClient.SendMessage(callback.NewContext(g, callbackClient.Options.GiftRouter))
 			case src := <-pool.Audience:
 				name := model.Json.Get(src, "data", "uname").ToString()
@@ -91,42 +91,28 @@ func RegisterHandler() gin.HandlerFunc {
 			return
 		}
 
-		client := callback.NewClient(
-			request.BaseRouter,
-			request.DanmakuRouter,
-			request.GiftRouter,
-			request.GuardRouter,
-			request.MasterRouter,
-			request.AudienceRouter,
-			request.FansRouter,
-			request.CustomMessage,
-		)
-		messageChan := pool.NewPoolWithHandler(WebsocketHandler(client))
-
-		wsClient := startWebsocketServer(request.RoomID, messageChan)
-
-		ctx.JSON(200, RoomInfo{
-			RoomID:     wsClient.RoomID,
-			UpUID:      wsClient.UpUID,
-			Title:      wsClient.Title,
-			Online:     wsClient.Online,
-			Tags:       wsClient.Tags,
-			LiveStatus: wsClient.LiveStatus,
-		})
-	}
-}
-
-func startWebsocketServer(realRoomID uint32, messageChan *pool.Pool) info.Room {
-	client := websocket.NewClientWithMessageChan(realRoomID, messageChan)
-	GetDefaultChannelService().AddChannel(realRoomID, client)
-
-	success := false
-	for i := 0; i < 10; i++ {
-		success = client.Serve()
-		if success {
-			break
+		option := &callback.ClientOptions{
+			BaseRouter:       request.BaseRouter,
+			DanmakuRouter:    request.DanmakuRouter,
+			GiftRouter:       request.GiftRouter,
+			GuardRouter:      request.GuardRouter,
+			MasterRouter:     request.MasterRouter,
+			AudienceRouter:   request.AudienceRouter,
+			FansRouter:       request.FansRouter,
+			CustomMessage:    request.CustomMessage,
+			ExitRouter:       request.ExitRouter,
+			UpdateRoomRouter: request.UpdateRoomRouter,
 		}
-	}
 
-	return client.GetRoomInfo()
+		service := NewMessageService()
+		service.CallbackClient = callback.NewClientWithOption(option)
+		messageChan := pool.NewPoolWithHandler(WebsocketHandler(service.CallbackClient))
+		service.WebsocketClient = websocket.NewClientWithMessageChan(request.RoomID, messageChan)
+
+		GetDefaultChannelService().AddChannel(request.RoomID, service)
+
+		service.Serve()
+
+		ctx.JSON(200, "success")
+	}
 }

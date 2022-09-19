@@ -29,7 +29,7 @@ func (c *Client) GetRoomInfo() info.Room {
 	return *c.roomInfo
 }
 
-func (c *Client) SendMessage(packageLength uint32, magic uint16, version uint16, typeID uint32, param uint32, data []byte) (err error) {
+func (c *Client) sendMessage(packageLength uint32, magic uint16, version uint16, typeID uint32, param uint32, data []byte) (err error) {
 	if packageLength == 0 {
 		packageLength = uint32(len(data) + 16)
 	}
@@ -46,7 +46,7 @@ func (c *Client) SendMessage(packageLength uint32, magic uint16, version uint16,
 	for _, v := range packageData {
 		if err = binary.Write(packetHead, binary.BigEndian, v); err != nil {
 			log.Printf("writing data to websocket package error: %v\n", err)
-			return
+			return err
 		}
 	}
 
@@ -55,13 +55,13 @@ func (c *Client) SendMessage(packageLength uint32, magic uint16, version uint16,
 
 	if err = c.connection.WriteMessage(websocket.BinaryMessage, sendData); err != nil {
 		log.Printf("send websocket data error: %v\n", err)
-		return
+		return err
 	}
 
-	return
+	return nil
 }
 
-func (c *Client) ReceivedMessage() {
+func (c *Client) receiveMessage() {
 	index := 0
 	for {
 		if index >= 5 {
@@ -133,17 +133,17 @@ func (c *Client) Serve() bool {
 	}
 	log.Printf("connected to %v succes, sending handshake: %v\n", model.ApiDanMuServer, string(payload))
 
-	if err = c.SendMessage(0, 16, 1, 7, 1, payload); err != nil {
+	if err = c.sendMessage(0, 16, 1, 7, 1, payload); err != nil {
 		log.Printf("send handshake package error: %v\n", err)
 		return false
 	}
-	go c.Heartbeat()
-	go c.ReceivedMessage()
+	go c.heartBeat()
+	go c.receiveMessage()
 
 	return true
 }
 
-func (c *Client) Heartbeat() {
+func (c *Client) heartBeat() {
 	for {
 		select {
 		case <-c.heartbeatExit:
@@ -151,7 +151,7 @@ func (c *Client) Heartbeat() {
 		default:
 			if c.Connected {
 				obj := []byte("5b6f626a656374204f626a6563745d")
-				if err := c.SendMessage(31, 16, 1, 2, 1, obj); err != nil {
+				if err := c.sendMessage(31, 16, 1, 2, 1, obj); err != nil {
 					log.Println("heart beat err: ", err)
 					continue
 				}
@@ -197,16 +197,28 @@ func (c *Client) restart(realRoomID uint32) {
 	log.Printf("failed restart websocket connection to room %v, exit\n", c.roomInfo.RoomID)
 }
 
-func NewClientWithHandler(realRoomID uint32, handler func(pool *pool.Pool)) *Client {
+func NewClientWithHandler(roomID uint32, handler func(pool *pool.Pool)) *Client {
+	var err error
+	if roomID < 1000 {
+		roomID, err = getRealRoomID(uint(roomID))
+		if err != nil {
+			log.Printf("failed to get real room ID: %v\n", err)
+		}
+	}
+
 	client := &Client{}
-	client.init(realRoomID)
+	client.init(roomID)
 	client.messageChan = pool.NewPoolWithHandler(handler)
 	return client
 }
 
 func NewClientWithMessageChan(roomID uint32, p *pool.Pool) *Client {
+	var err error
 	if roomID < 1000 {
-		roomID, _ = getRealRoomID(uint(roomID))
+		roomID, err = getRealRoomID(uint(roomID))
+		if err != nil {
+			log.Printf("failed to get real room ID: %v", err)
+		}
 	}
 
 	client := &Client{}

@@ -6,8 +6,6 @@ import (
 	"sync"
 
 	"github.com/gin-gonic/gin"
-
-	"github.com/sunist-c/bililive-danmaku-backend/websocket"
 )
 
 var (
@@ -16,14 +14,14 @@ var (
 
 type Channel struct {
 	mu    *sync.RWMutex
-	rooms map[uint32]*websocket.Client
+	rooms map[uint32]*MessageService
 }
 
 type ChannelService struct {
 	data *Channel
 }
 
-func (s *ChannelService) AddChannel(realRoomID uint32, client *websocket.Client) (success bool) {
+func (s *ChannelService) AddChannel(realRoomID uint32, service *MessageService) (success bool) {
 	s.data.mu.Lock()
 	defer s.data.mu.Unlock()
 
@@ -31,7 +29,7 @@ func (s *ChannelService) AddChannel(realRoomID uint32, client *websocket.Client)
 		log.Printf("add existed room %v\n", realRoomID)
 		return false
 	} else {
-		s.data.rooms[realRoomID] = client
+		s.data.rooms[realRoomID] = service
 		return true
 	}
 }
@@ -40,11 +38,11 @@ func (s *ChannelService) RemoveChannel(realRoomID uint32) (success bool) {
 	s.data.mu.Lock()
 	defer s.data.mu.Unlock()
 
-	if client, ok := s.data.rooms[realRoomID]; !ok {
+	if service, ok := s.data.rooms[realRoomID]; !ok {
 		log.Printf("try to remove a unregisted room: %v\n", realRoomID)
 		return true
 	} else {
-		client.Stop()
+		service.Stop()
 		delete(s.data.rooms, realRoomID)
 		return true
 	}
@@ -55,7 +53,7 @@ func GetDefaultChannelService() *ChannelService {
 		channelService = &ChannelService{
 			data: &Channel{
 				mu:    &sync.RWMutex{},
-				rooms: map[uint32]*websocket.Client{},
+				rooms: map[uint32]*MessageService{},
 			},
 		}
 	}
