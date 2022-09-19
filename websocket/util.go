@@ -15,7 +15,7 @@ import (
 	"github.com/sunist-c/bililive-danmaku-backend/model/info"
 )
 
-func ByteArrToDecimal(src []byte) (sum int) {
+func byteArrToInt(src []byte) (sum int) {
 	if src == nil {
 		return 0
 	}
@@ -36,7 +36,7 @@ func ByteArrToDecimal(src []byte) (sum int) {
 	return sum
 }
 
-func ZlibInflate(compress []byte) ([]byte, error) {
+func zlibInflate(compress []byte) ([]byte, error) {
 	var out bytes.Buffer
 	c := bytes.NewReader(compress)
 	r, err := zlib.NewReader(c)

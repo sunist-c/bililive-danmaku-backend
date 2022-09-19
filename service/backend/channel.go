@@ -7,7 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/sunist-c/bililive-danmaku-backend/websocket"
+	"github.com/sunist-c/bililive-danmaku-backend/service/system"
 )
 
 var (
@@ -16,38 +16,49 @@ var (
 
 type Channel struct {
 	mu    *sync.RWMutex
-	rooms map[uint32]*websocket.Client
+	rooms map[uint32]*system.MessageService
 }
 
 type ChannelService struct {
 	data *Channel
 }
 
-func (s *ChannelService) AddChannel(realRoomID uint32, client *websocket.Client) (success bool) {
+func (s *ChannelService) AddChannel(roomID uint32, service *system.MessageService) (success bool) {
 	s.data.mu.Lock()
 	defer s.data.mu.Unlock()
 
-	if _, ok := s.data.rooms[realRoomID]; ok {
-		log.Printf("add existed room %v\n", realRoomID)
+	if _, ok := s.data.rooms[roomID]; ok {
+		log.Printf("add existed room %v\n", roomID)
 		return false
 	} else {
-		s.data.rooms[realRoomID] = client
+		s.data.rooms[roomID] = service
 		return true
 	}
 }
 
-func (s *ChannelService) RemoveChannel(realRoomID uint32) (success bool) {
+func (s *ChannelService) RemoveChannel(roomID uint32) (success bool) {
 	s.data.mu.Lock()
 	defer s.data.mu.Unlock()
 
-	if client, ok := s.data.rooms[realRoomID]; !ok {
-		log.Printf("try to remove a unregisted room: %v\n", realRoomID)
+	if messageService, ok := s.data.rooms[roomID]; !ok {
+		log.Printf("try to remove a unregisted room: %v\n", roomID)
 		return true
 	} else {
-		client.Stop()
-		delete(s.data.rooms, realRoomID)
-		return true
+		delete(s.data.rooms, roomID)
+		return messageService.Close()
 	}
+}
+
+func (s *ChannelService) RemoveAllChannel() (success, total uint) {
+	total, success = 0, 0
+	for _, messageService := range s.data.rooms {
+		total += 1
+		if messageService.Close() {
+			success += 1
+		}
+	}
+
+	return success, total
 }
 
 func GetDefaultChannelService() *ChannelService {
@@ -55,7 +66,7 @@ func GetDefaultChannelService() *ChannelService {
 		channelService = &ChannelService{
 			data: &Channel{
 				mu:    &sync.RWMutex{},
-				rooms: map[uint32]*websocket.Client{},
+				rooms: map[uint32]*system.MessageService{},
 			},
 		}
 	}

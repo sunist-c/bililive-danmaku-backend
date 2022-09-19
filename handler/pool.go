@@ -1,4 +1,4 @@
-package pool
+package handler
 
 type Pool struct {
 	Danmaku  chan []byte
@@ -9,7 +9,7 @@ type Pool struct {
 	Unknown  chan []byte
 }
 
-func NewPoolWithHandler(handler func(pool *Pool)) *Pool {
+func NewPool() *Pool {
 	pool := &Pool{
 		Danmaku:  make(chan []byte, 32),
 		Gift:     make(chan []byte, 32),
@@ -18,7 +18,6 @@ func NewPoolWithHandler(handler func(pool *Pool)) *Pool {
 		Audience: make(chan []byte, 32),
 		Unknown:  make(chan []byte, 32),
 	}
-	go handler(pool)
 
 	return pool
 }

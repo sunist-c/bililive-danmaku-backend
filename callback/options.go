@@ -9,4 +9,6 @@ type ClientOptions struct {
 	AudienceRouter string
 	FansRouter     string
 	CustomMessage  string
+	UpdateRoom     string
+	ExitRouter     string
 }

@@ -1,39 +1,40 @@
-package pool
+package handler
 
 import (
-	"log"
-	"strings"
-
+	"github.com/sunist-c/bililive-danmaku-backend/common/logging"
 	"github.com/sunist-c/bililive-danmaku-backend/model"
 	"github.com/sunist-c/bililive-danmaku-backend/model/message"
+	"strings"
 )
 
-func EmptyHandler() func(pool *Pool) {
-	return func(pool *Pool) {
+func DisplayImplementation() func(pool *Pool, exit chan struct{}) {
+	return func(pool *Pool, exit chan struct{}) {
 		for {
 			select {
+			case <-exit:
+				return
 			case uc := <-pool.Unknown:
 				if cmd := model.Json.Get(uc, "cmd").ToString(); message.Command(cmd) == message.CommandRoomFocusedChange {
 					fans := model.Json.Get(uc, "data", "fans").ToInt()
-					log.Printf("room fans changed: %v\n", fans)
+					logging.Info("room fans changed: %v", fans)
 				}
 			case src := <-pool.Danmaku:
 				m := message.NewDanmakuWithData(src)
-				log.Printf("%d-%s | %d-%s: %s\n", m.MedalLevel, m.MedalName, m.UserLevel, m.UserName, m.Message)
+				logging.Info("Lv%d %s - Lv%d %s: %s", m.MedalLevel, m.MedalName, m.UserLevel, m.UserName, m.Message)
 			case src := <-pool.Gift:
 				g := message.NewGiftWithData(src)
-				log.Printf("%s %s valued %d gift %s * %v\n", g.UserName, g.Action, g.Price, g.GiftName, g.Number)
+				logging.Info("%s %s gift %s*%v, total valued %v", g.UserName, g.Action, g.GiftName, g.Number, g.Price)
 			case src := <-pool.Audience:
 				name := model.Json.Get(src, "data", "uname").ToString()
-				log.Printf("welcome master %s entered room\n", name)
+				logging.Info("welcome master %s entered room", name)
 			case src := <-pool.Guard:
 				name := model.Json.Get(src, "data", "username").ToString()
-				log.Printf("welcome guard %s entered room\n", name)
+				logging.Info("welcome guard %s entered room", name)
 			case src := <-pool.Master:
 				cw := model.Json.Get(src, "data", "copy_writing").ToString()
 				cw = strings.Replace(cw, "<%", "", 1)
 				cw = strings.Replace(cw, "%>", "", 1)
-				log.Printf("%s\n", cw)
+				logging.Info("%s", cw)
 			}
 		}
 	}

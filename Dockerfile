@@ -13,6 +13,7 @@ FROM alpine
 WORKDIR /app
 
 ENV GIN_MODE release
+ENV LOG_LEVEL error
 
 COPY --from=builder /app/danmaku ./danmaku
 
